@@ -38,6 +38,8 @@ julia> 3 |foo| 5.
 -2.0
 
 julia> @infix div
+INFO: div has been infixified
+div (generic function with 31 methods)
 
 julia> 10 |div| 5
 2
