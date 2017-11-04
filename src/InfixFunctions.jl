@@ -149,7 +149,7 @@ macro infix(operator::Symbol)
         info("$($operator) has been infixified")
 
         $operator
-    end
+    end |> esc
 end
 
 
