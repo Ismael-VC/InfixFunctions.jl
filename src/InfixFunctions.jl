@@ -39,7 +39,7 @@ Base.:|(infix::InfixFunction, arg₂) = infix.operator(arg₂)
 
 
 """
-    @infix function_expr
+    @infix function_expression::Expr
 
 # Usage
 
@@ -96,6 +96,20 @@ macro infix(operator::Expr)
     end |> esc
 end
 
+"""
+    @infix function_symbol::Symbol
+
+# Usage
+
+```julia
+julia> using InfixFunctions
+
+julia> @infix div
+
+julia> 10 |div| 5
+2
+```
+"""
 macro infix(operator::Symbol)
     return quote
         $operator::Function

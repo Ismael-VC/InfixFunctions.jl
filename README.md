@@ -36,4 +36,9 @@ julia> 3 |foo| 5
 
 julia> 3 |foo| 5.
 -2.0
+
+julia> @infix div
+
+julia> 10 |div| 5
+2
 ```
