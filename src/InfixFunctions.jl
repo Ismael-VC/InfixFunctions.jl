@@ -51,7 +51,7 @@ macro infix(operator)
 
         (arg₁_, arg₂_) -> body_
 
-    ) || error("syntax: expected an anonymous function")
+    ) || error("syntax: expected a binary anonymous function")
 
     return :($InfixFunction($operator)) |> esc
 end
