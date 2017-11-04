@@ -68,28 +68,54 @@ julia> 3 |foo| 5.
 ```
 """
 macro infix(operator::Expr)
-    @capture(operator, function name_(arg₁_, arg₂_) where parameters__ body_ end)    ||
-    @capture(operator, name_(arg₁_, arg₂_) where parameters__ = body_)               ||
-    @capture(operator, function name_(arg₁_, arg₂_) body_ end)                       ||
-    @capture(operator, name_(arg₁_, arg₂_) = body_)                                  ||
+    @capture(operator, function name_(arg₁_, arg₂_)::ret_typ_ where parameters__ body_ end)    ||
+    @capture(operator, function name_(arg₁_, arg₂_) where parameters__ body_ end)              ||
+
+    @capture(operator, (name_(arg₁_, arg₂_)::ret_typ_) where parameters__ = body_)             ||
+    @capture(operator, name_(arg₁_, arg₂_) where parameters__ = body_)                         ||
+
+    @capture(operator, function name_(arg₁_, arg₂_)::ret_typ_ body_ end)                       ||
+    @capture(operator, function name_(arg₁_, arg₂_) body_ end)                                 ||
+
+    @capture(operator, (name_(arg₁_, arg₂_)::ret_typ_) = body_)                                ||
+    @capture(operator, name_(arg₁_, arg₂_) = body_)                                            ||
 
     error("syntax: expected a binary function")
 
-    dummy = [:(__Dummy <: __AbstractDummy)]
-    _parameters = parameters === nothing ? dummy : parameters
+    dummy_params = [:(__Dummy <: __AbstractDummy)]
+    _parameters = parameters === nothing ? dummy_params : parameters
+
+    dummy_ret_typ = :__Dummy
+    _ret_typ = ret_typ === nothing ? dummy_ret_typ : ret_typ
 
     return quote
         if !isdefined($(quot(name)))
-            if !($(quot(_parameters)) === $(quot(dummy)))
-                const $name = $InfixFunction($(quot(name)), (($arg₁, $arg₂) where $(_parameters...)) -> $body)
+            if !($(quot(_parameters)) == $(quot(dummy_params)))
+                if !($(quot(_ret_typ)) == $(quot(dummy_ret_typ)))
+                    const $name = $InfixFunction($(quot(name)), (($arg₁, $arg₂) where $(_parameters...)) -> $body::$ret_typ)
+                else
+                    const $name = $InfixFunction($(quot(name)), (($arg₁, $arg₂) where $(_parameters...)) -> $body)
+                end
             else
-                const $name = $InfixFunction($(quot(name)), ($arg₁, $arg₂) -> $body)
+                if !($(quot(_ret_typ)) == $(quot(dummy_ret_typ)))
+                    const $name = $InfixFunction($(quot(name)), ($arg₁, $arg₂) -> $body::$ret_typ)
+                else
+                    const $name = $InfixFunction($(quot(name)), ($arg₁, $arg₂) -> $body)
+                end
             end
         else
-            if !($(quot(_parameters)) === $(quot(dummy)))
-                $name.operator($arg₁, $arg₂) where $(_parameters...) = $body
+            if !($(quot(_parameters)) == $(quot(dummy_params)))
+                if !($(quot(_ret_typ)) == $(quot(dummy_ret_typ)))
+                    ($name.operator($arg₁, $arg₂)::$ret_typ) where $(_parameters...) = $body
+                else
+                    $name.operator($arg₁, $arg₂) where $(_parameters...) = $body
+                end
             else
-                $name.operator($arg₁, $arg₂) = $body
+                if !($(quot(_ret_typ)) == $(quot(dummy_ret_typ)))
+                    ($name.operator($arg₁, $arg₂)::$ret_typ) = $body
+                else
+                    $name.operator($arg₁, $arg₂) = $body
+                end
             end
             $name
         end
@@ -115,10 +141,14 @@ macro infix(operator::Symbol)
         $operator::Function
 
         function Base.:|(arg₁, infix::typeof($operator))
-            return InfixFunction(arg₂ -> infix(arg₁, arg₂))
+            return $InfixFunction(arg₂ -> infix(arg₁, arg₂))
         end
 
         Base.:|(infix::typeof($operator), arg₂) = infix(arg₂)
+
+        info("$($operator) has been infixified")
+
+        $operator
     end
 end
 
