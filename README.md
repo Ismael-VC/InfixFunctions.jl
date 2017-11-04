@@ -6,7 +6,11 @@ Julia infix function *hack*, based on this Python hack:
 
 ***
 
-    @infix anonymous_function
+# Installation
+
+```julia
+julia> Pkg.clone("https://github.com/Ismael-VC/InfixFunctions.jl")
+```
 
 # Usage
 
