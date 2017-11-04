@@ -54,7 +54,7 @@ julia> @infix function foo(x::T, y::T) where {T<:Int}
        end
 foo (generic infix function with 2 methods)
 
-julia> @infix foo(x::T, y::S) where {T<:Int, S<:Float64} = x - y
+julia> @infix (foo(x::T, y::S)::S) where {T<:Int, S<:Float64} = x - y
 foo (generic infix function with 3 methods)
 
 julia> 3.0 |foo| π
