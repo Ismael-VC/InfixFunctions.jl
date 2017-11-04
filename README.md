@@ -15,19 +15,25 @@ julia> Pkg.clone("https://github.com/Ismael-VC/InfixFunctions.jl")
 # Usage
 
 ```julia
-julia> using InfixFunctions: @infix
+julia> using InfixFunctions
 
-julia> add = @infix (x, y) -> x + y
-(::InfixFunction) (generic function with 1 method)
+julia> @infix foo(x, y) = x + y
+foo (generic infix function with 1 method)
 
-julia> 5 |add| 5
-10
-
-julia> sub = @infix function (x, y)
-           return x - y
+julia> @infix function foo(x::T, y::T) where {T<:Int}
+           return Complex(x + y)
        end
-(::InfixFunction) (generic function with 1 method)
+foo (generic infix function with 2 methods)
 
-julia> 5 |sub| 5
-0
+julia> @infix foo(x::T, y::S) where {T<:Int, S<:Float64} = x - y
+foo (generic infix function with 3 methods)
+
+julia> 3.0 |foo| π
+6.141592653589793
+
+julia> 3 |foo| 5
+8 + 0im
+
+julia> 3 |foo| 5.
+-2.0
 ```
